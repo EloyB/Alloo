@@ -2,6 +2,7 @@ import { Camera } from "expo-camera";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useState } from "react";
 import { Button, Platform, StyleSheet, Text, View } from "react-native";
+import { AdMobBanner } from "expo-ads-admob";
 
 export default function App() {
   const [hasPermission, setHasPermission] = useState(null);
@@ -34,6 +35,10 @@ export default function App() {
         title="Turn On"
         color="#841584"
       />
+      <AdMobBanner
+      bannerSize= "banner"
+      adUnitID= "ca-app-pub-3940256099942544/6300978111"
+      servePersonalizeAds= {false}/>
     </View>
   );
 }
