@@ -1,39 +1,48 @@
+import { BarCodeScanner } from "expo-barcode-scanner";
 import { Camera } from "expo-camera";
 import { StatusBar } from "expo-status-bar";
 import React, { useEffect, useState } from "react";
-import { Button, Platform, StyleSheet, Text, View } from "react-native";
+import {
+  Button,
+  Dimensions,
+  Platform,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+
+const { height, width } = Dimensions.get("screen");
 
 export default function App() {
   const [hasPermission, setHasPermission] = useState(null);
   const [toggleFlash, setToggleFlash] = useState(false);
   const [type, setType] = useState(Camera.Constants.Type.back);
+  const [scanned, setScanned] = useState(false);
+  const [data, setData] = useState("");
+
+  const handleBarCodeScanned = ({ type, data }) => {
+    alert(`Bar code with type ${type} and data ${data} has been scanned!`);
+    //setData(data);
+  };
 
   useEffect(() => {
     (async () => {
-      const { status } = await Camera.requestPermissionsAsync();
+      const { status } = await BarCodeScanner.requestPermissionsAsync();
       setHasPermission(status === "granted");
     })();
   }, []);
 
   return (
     <View style={styles.container}>
-      {toggleFlash && (
-        <Camera
-          style={{
-            width: 1,
-            height: 1,
-            alignSelf: "stretch",
-          }}
-          type={type}
-          flashMode="torch"
-        />
-      )}
-
-      <Button
-        onPress={() => setToggleFlash(!toggleFlash)}
-        title="Turn On"
-        color="#841584"
+      <Camera
+        onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
+        ratio="16:9"
+        style={StyleSheet.absoluteFillObject}
+        barCodeScannerSettings={{
+          barCodeTypes: [BarCodeScanner.Constants.BarCodeType.qr],
+        }}
       />
+      <Button title={data} onPress={() => setScanned(false)} />
     </View>
   );
 }
