@@ -1,57 +1,31 @@
-import { BarCodeScanner } from "expo-barcode-scanner";
-import { Camera } from "expo-camera";
-import { StatusBar } from "expo-status-bar";
-import React, { useEffect, useState } from "react";
-import {
-  Button,
-  Dimensions,
-  Platform,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import React from "react";
 
-const { height, width } = Dimensions.get("screen");
+import { NavigationContainer } from "@react-navigation/native";
+import { createStackNavigator } from "@react-navigation/stack";
+import { StateProvider } from "./StateProvider";
+import HomeScreen from "./Screens/HomeScreen";
+import HistoryScreen from "./Screens/HistoryScreen";
+import reducer, { initialState } from "./reducer";
+
+const Stack = createStackNavigator();
 
 export default function App() {
-  const [hasPermission, setHasPermission] = useState(null);
-  const [toggleFlash, setToggleFlash] = useState(false);
-  const [type, setType] = useState(Camera.Constants.Type.back);
-  const [scanned, setScanned] = useState(false);
-  const [data, setData] = useState("");
-
-  const handleBarCodeScanned = ({ type, data }) => {
-    alert(`Bar code with type ${type} and data ${data} has been scanned!`);
-    //setData(data);
-  };
-
-  useEffect(() => {
-    (async () => {
-      const { status } = await BarCodeScanner.requestPermissionsAsync();
-      setHasPermission(status === "granted");
-    })();
-  }, []);
-
   return (
-    <View style={styles.container}>
-      <Camera
-        onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
-        ratio="16:9"
-        style={StyleSheet.absoluteFillObject}
-        barCodeScannerSettings={{
-          barCodeTypes: [BarCodeScanner.Constants.BarCodeType.qr],
-        }}
-      />
-      <Button title={data} onPress={() => setScanned(false)} />
-    </View>
+    <StateProvider initialState={initialState} reducer={reducer}>
+      <NavigationContainer>
+        <Stack.Navigator>
+          <Stack.Screen
+            name="Home"
+            component={HomeScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="History"
+            component={HistoryScreen}
+            options={{ headerShown: false }}
+          />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </StateProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-});
