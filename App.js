@@ -37,7 +37,7 @@ export default function App() {
       />
       <AdMobBanner
       bannerSize= "banner"
-      adUnitID= "ca-app-pub-3940256099942544/6300978111"
+      adUnitID= "ca-app-pub-1017597512568309/4212191106"
       servePersonalizeAds= {false}/>
     </View>
   );
