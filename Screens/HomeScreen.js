@@ -9,11 +9,12 @@ import RoundActionButton from "../Components/RoundActionButton";
 import ScanDropdown from "../Components/ScanDropdown";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useStateValue } from "../StateProvider";
+import { createGuid } from "../reducer";
 
 const { height, width } = Dimensions.get("screen");
 
 const HomeScreen = ({ navigation }) => {
-  const [{ history, favorites }, dispatch] = useStateValue();
+  const [{ history }, dispatch] = useStateValue();
 
   const [hasPermission, setHasPermission] = useState(null);
   const [toggleFlash, setToggleFlash] = useState(false);
@@ -25,10 +26,11 @@ const HomeScreen = ({ navigation }) => {
   const handleBarCodeScanned = ({ type, data }) => {
     setScanned(true);
     setShowNotification(true);
-    setScannedData(type);
+    setScannedData(data);
+    addToLocalStorage(type, data);
     Animated.timing(animateY, {
       toValue: 0,
-      duration: 1000,
+      duration: 500,
       useNativeDriver: false,
     }).start();
   };
@@ -38,11 +40,57 @@ const HomeScreen = ({ navigation }) => {
     animateY.resetAnimation();
   };
 
+  const addToLocalStorage = async (type, data) => {
+    const newItem = {
+      id: createGuid(),
+      type,
+      data,
+      favorite: false,
+    };
+
+    try {
+      await AsyncStorage.getItem("@History_List", (error, result) => {
+        if (result !== null) {
+          var updatedList = JSON.parse(result).concat(newItem);
+          AsyncStorage.setItem("@History_List", JSON.stringify(updatedList));
+          dispatch({
+            type: "ADD_TO_HISTORY",
+            item: newItem,
+          });
+        }
+      });
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const askPermission = async () => {
+    const { status } = await Camera.requestPermissionsAsync();
+    setHasPermission(status === "granted");
+  };
+
+  const readLocalStorage = async () => {
+    try {
+      await AsyncStorage.getItem("@History_List", (error, result) => {
+        dispatch({
+          type: "INITIALIZE_HISTORY",
+          list: JSON.parse(result),
+        });
+      });
+      await AsyncStorage.getItem("@Favorites_List", (error, result) => {
+        dispatch({
+          type: "INITIALIZE_FAVORITES",
+          list: JSON.parse(result),
+        });
+      });
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
   useEffect(() => {
-    (async () => {
-      const { status } = await Camera.requestPermissionsAsync();
-      setHasPermission(status === "granted");
-    })();
+    askPermission();
+    readLocalStorage();
   }, []);
 
   return (

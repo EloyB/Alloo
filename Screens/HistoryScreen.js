@@ -1,12 +1,16 @@
-import React from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { useEffect } from "react";
 import { useState } from "react";
 import { View, Text, StyleSheet, Dimensions } from "react-native";
 import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 import ScannedListItem from "../Components/ScannedListItem";
+import { useStateValue } from "../StateProvider";
 
 const { height, width } = Dimensions.get("screen");
 
 const HistoryScreen = () => {
+  const [{ history, favorites }, dispatch] = useStateValue();
+
   const [historySelected, setHistorySelected] = useState(true);
   const [favoritesSelected, setFavoritesSelected] = useState(false);
 
@@ -47,7 +51,15 @@ const HistoryScreen = () => {
           </View>
         </TouchableWithoutFeedback>
       </View>
-      <ScannedListItem />
+      {history.map((item, index) => (
+        <ScannedListItem
+          key={index}
+          id={item.id}
+          type={item.type}
+          data={item.data}
+          favorite={item.favorite}
+        />
+      ))}
     </View>
   );
 };
